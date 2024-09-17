@@ -1,0 +1,62 @@
+{
+    "parser": "@typescript-eslint/parser",
+    "env": {
+        "browser": true,
+        "commonjs": false,
+        "es6": true,
+        "jest": true,
+        "node": false
+    },
+    "parserOptions": {
+        "sourceType": "module",
+        "requireConfigFile": false
+    },
+    "plugins": ["prettier", "@typescript-eslint", "simple-import-sort"],
+    "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/recommended",
+        "plugin:react-hooks/recommended",
+        "plugin:prettier/recommended",
+        "prettier"
+    ],
+    "rules": {
+        "consistent-return": "warn",
+        "arrow-body-style": ["warn", "as-needed"],
+        "no-console": [
+            "error",
+            {
+                "allow": ["warn", "error"]
+            }
+        ],
+        "no-unused-vars": "off",
+        "@typescript-eslint/consistent-type-imports": ["error", { "fixStyle": "inline-type-imports" }],
+        "@typescript-eslint/no-unused-vars": [
+            "warn",
+            {
+                "argsIgnorePattern": "^_",
+                "varsIgnorePattern": "^_",
+                "destructuredArrayIgnorePattern": "^_",
+                "ignoreRestSiblings": true
+            }
+        ],
+        "simple-import-sort/imports": "error",
+        "simple-import-sort/exports": "error",
+        "no-irregular-whitespace": [
+            "error",
+            {
+                "skipStrings": true,
+                "skipComments": false,
+                "skipRegExps": true,
+                "skipTemplates": true
+            }
+        ],
+        "prettier/prettier": "error",
+        "@typescript-eslint/no-empty-interface": [
+            "warn",
+            {
+                "allowSingleExtends": true
+            }
+        ],
+        "@typescript-eslint/ban-ts-comment": "warn"
+    }
+}
