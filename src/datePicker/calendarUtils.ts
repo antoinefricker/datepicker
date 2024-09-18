@@ -5,7 +5,7 @@ export const WEEK_STARTS_ON = 6;
 export const DAYS_IN_WEEK = 7;
 export const MONTHS_IN_YEAR = 12;
 export const SHOW_WEEK_NUMBER = true;
-export const ROOT_WIDTH = 560;
+export const ROOT_WIDTH = 640;
 
 export const getMonthRange = (from: Date) => {
     const start = add(startOfDay(startOfMonth(from)), { hours: DAY_START_HOUR });
