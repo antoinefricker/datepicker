@@ -3,6 +3,8 @@ export const DumbDatePickerClassLabels = {
     header: 'ddp-calendarHead',
     browsers: 'ddp-calendarBrowsers',
     monthsBrowser: 'ddp-monthYearPicker',
+    monthsContainer: 'ddp-monthsContainer',
+    monthCell: 'ddp-monthYearCell',
     calendarBrowser: 'ddp-calendarPicker',
     calendarBody: 'ddp-calendarBody',
     calendarRow: 'ddp-calendarRow',

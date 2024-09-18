@@ -3,6 +3,7 @@ import { add, differenceInDays, format, startOfDay, startOfMonth, startOfWeek } 
 export const DAY_START_HOUR = 6;
 export const WEEK_STARTS_ON = 6;
 export const DAYS_IN_WEEK = 7;
+export const MONTHS_IN_YEAR = 12;
 export const SHOW_WEEK_NUMBER = true;
 export const ROOT_WIDTH = 560;
 
@@ -32,8 +33,25 @@ export const getDatesInRange = ({ start, length }: DateRange): Date[] =>
 
 export const isDateOutOfMonthRange = (date: Date, displayedDate: Date) => date.getMonth() !== displayedDate.getMonth();
 
-export const getLocalizedDayNames = (cols: number, dateRange: DateRange) =>
-    Array.from({ length: cols }).map((_, index) => format(add(dateRange.start, { days: index }), 'EE'));
+export const getLocalizedDayNames = (): string[] => {
+    const daysNames: string[] = [];
+    for (let i = 0; i < DAYS_IN_WEEK; i++) {
+        const day = (WEEK_STARTS_ON + i) % DAYS_IN_WEEK;
+        const date = new Date(2024, 0, day);
+        const dayName = format(date, 'EE');
+        daysNames.push(dayName);
+    }
+    return daysNames;
+};
+
+export const getLocalizedMonthsNames = () => {
+    const monthsNames: string[] = [];
+    for (let i = 0; i < MONTHS_IN_YEAR; i++) {
+        const date = new Date(2024, i, 1);
+        monthsNames.push(format(date, 'MMMM'));
+    }
+    return monthsNames;
+};
 
 export type DateRange = {
     /** range inclusive start */

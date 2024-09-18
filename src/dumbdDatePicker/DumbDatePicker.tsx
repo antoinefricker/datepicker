@@ -4,6 +4,7 @@ import {
     getDateGroupKey,
     getDatesInRange,
     getLocalizedDayNames,
+    getLocalizedMonthsNames,
     getMonthDisplayRange,
     isDateOutOfMonthRange,
     ROOT_WIDTH,
@@ -24,7 +25,8 @@ export const DumbDatePicker = () => {
     const displayedDateRange = getMonthDisplayRange(selectedDate);
     const datesInRange = getDatesInRange(displayedDateRange);
     const rows = chunk(datesInRange, DAYS_IN_WEEK);
-    const dayNames = getLocalizedDayNames(DAYS_IN_WEEK, displayedDateRange);
+    const daysNames = getLocalizedDayNames();
+    const monthsNames = getLocalizedMonthsNames();
 
     return (
         <Box className={classLabels.root} sx={calendarSx}>
@@ -37,7 +39,7 @@ export const DumbDatePicker = () => {
             <section className={classLabels.browsers}>
                 <div className={classLabels.calendarBrowser}>
                     <div className={classLabels.calendarRow} key={`daynames`}>
-                        {dayNames.map((dayName) => (
+                        {daysNames.map((dayName) => (
                             <div className={classLabels.calendarCell} key={`day_${dayName}`}>
                                 {dayName}
                             </div>
@@ -62,7 +64,13 @@ export const DumbDatePicker = () => {
                     ))}
                 </div>
                 <div className={classLabels.monthsBrowser}>
-                    <div>Month Browser</div>
+                    <div className={classLabels.monthsContainer}>
+                        {monthsNames.map((monthName) => (
+                            <div className={classLabels.monthCell} key={`month_${monthName}`}>
+                                {monthName}
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </section>
         </Box>
@@ -87,6 +95,14 @@ const calendarSx = {
     },
     [`.${classLabels.monthsBrowser}`]: {
         flex: '50% 0 0',
+    },
+    [`.${classLabels.monthsContainer}`]: {
+        display: 'flex',
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+    },
+    [`.${classLabels.monthCell}`]: {
+        flex: '33% 0 0',
     },
     [`.${classLabels.calendarBrowser}`]: {
         flex: '50% 0 0',
