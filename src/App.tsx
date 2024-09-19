@@ -38,7 +38,7 @@ export const App = () => {
     return (
         <ThemeProvider theme={defaultTheme}>
             <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={dateLocales[dateLocale]}>
-                <Stack direction="column" spacing={2}>
+                <Stack direction="column" spacing={2} sx={{ p: 4 }}>
                     <FormControl fullWidth size="small">
                         <InputLabel id="selectionModeLabel" shrink>
                             Selection mode

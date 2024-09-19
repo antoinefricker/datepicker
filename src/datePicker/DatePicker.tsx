@@ -83,7 +83,7 @@ export const DatePicker = ({
     }
     return (
         <ClickAwayListener onClickAway={() => openedHandler(false)}>
-            <Card className={classLabels.root} sx={calendarSx(options)}>
+            <Card className={classLabels.root} sx={calendarSx(options)} elevation={4}>
                 <CardContent className={classLabels.container}>
                     {selectionMode !== 'month' && (
                         <section className={clsx([classLabels.picker, classLabels.dayPicker])}>
