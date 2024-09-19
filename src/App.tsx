@@ -15,7 +15,17 @@ export const App = () => {
             <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={dateLocales[dateLocale]}>
                 <Typography>{format(date, 'dd/MM/yyyy')}</Typography>
                 <Box sx={{ p: 10 }}>
-                    <DatePicker isStatic handleDateChange={(date) => setDate(date)} />
+                    <DatePicker
+                        isStatic
+                        handleDateChange={(date) => setDate(date)}
+                        selectionMode="day"
+                        options={{
+                            dayStartHour: 5,
+                            weekStartsOn: 6,
+                            showWeekNumber: true,
+                            rootWidth: 640,
+                        }}
+                    />
                 </Box>
             </LocalizationProvider>
         </ThemeProvider>

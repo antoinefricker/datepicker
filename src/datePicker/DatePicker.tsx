@@ -7,9 +7,6 @@ import {
     getLocalizedMonthsNames,
     getMonthDisplayRange,
     isDateOutOfMonthRange,
-    ROOT_WIDTH,
-    SHOW_WEEK_NUMBER,
-    WEEK_STARTS_ON,
 } from './calendarUtils';
 import { chunk } from 'lodash';
 import clsx from 'clsx';
@@ -18,9 +15,11 @@ import { LuChevronLeft } from 'react-icons/lu';
 import { LuChevronRight } from 'react-icons/lu';
 import { Button, Card, CardContent, ClickAwayListener, IconButton, Theme, Typography } from '@mui/material';
 
-export const DatePicker = ({ handleDateChange, isStatic }: DatePickerProps) => {
+export const DatePicker = ({ selectionMode, handleDateChange, isStatic, options: paramsOptions }: DatePickerProps) => {
     const [opened, setOpened] = useState<boolean>(true);
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+
+    const options = getOptions(paramsOptions);
 
     useEffect(() => {
         handleDateChange(selectedDate);
@@ -28,8 +27,8 @@ export const DatePicker = ({ handleDateChange, isStatic }: DatePickerProps) => {
 
     const openedHandler = (value: boolean) => setOpened(value || !!isStatic);
 
-    const daysNames = getLocalizedDayNames();
-    const displayedDateRange = getMonthDisplayRange(selectedDate);
+    const daysNames = getLocalizedDayNames(options);
+    const displayedDateRange = getMonthDisplayRange(selectedDate, options);
     const datesInRange = getDatesInRange(displayedDateRange);
     const datesRows = chunk(datesInRange, DAYS_IN_WEEK);
 
@@ -49,7 +48,7 @@ export const DatePicker = ({ handleDateChange, isStatic }: DatePickerProps) => {
 
     return (
         <ClickAwayListener onClickAway={() => openedHandler(false)}>
-            <Card elevation={4} className={classLabels.root} sx={calendarSx}>
+            <Card elevation={4} className={classLabels.root} sx={calendarSx(options)}>
                 <CardContent>
                     <div className={classLabels.browsers}>
                         <section className={classLabels.dayPicker}>
@@ -65,7 +64,7 @@ export const DatePicker = ({ handleDateChange, isStatic }: DatePickerProps) => {
                             <table>
                                 <thead>
                                     <tr key={`daynames`}>
-                                        {SHOW_WEEK_NUMBER && <td className={classLabels.isWeekNumber}>#</td>}
+                                        {options.showWeekNumber && <td className={classLabels.isWeekNumber}>#</td>}
                                         {daysNames.map((dayName) => (
                                             <td key={`day_${dayName}`}>{dayName}</td>
                                         ))}
@@ -74,13 +73,14 @@ export const DatePicker = ({ handleDateChange, isStatic }: DatePickerProps) => {
                                 <tbody>
                                     {datesRows.map((row, rowIndex) => (
                                         <tr key={`week_${rowIndex}`}>
-                                            {SHOW_WEEK_NUMBER && (
+                                            {options.showWeekNumber && (
                                                 <td className={classLabels.isWeekNumber}>
-                                                    {format(row[0], 'w', { weekStartsOn: WEEK_STARTS_ON })}
+                                                    {format(row[0], 'w', { weekStartsOn: options.weekStartsOn })}
                                                 </td>
                                             )}
                                             {row.map((date) => (
                                                 <td
+                                                    onClick={reachDate(date)}
                                                     className={clsx({
                                                         [classLabels.isOutOfRange]: isDateOutOfMonthRange(
                                                             date,
@@ -90,19 +90,7 @@ export const DatePicker = ({ handleDateChange, isStatic }: DatePickerProps) => {
                                                     })}
                                                     key={`day_${getDateGroupKey(date)}`}
                                                 >
-                                                    <Button
-                                                        variant="text"
-                                                        sx={{
-                                                            color: 'text.primary',
-                                                            minWidth: 'auto',
-                                                            minHeight: 'auto',
-                                                            py: 0.25,
-                                                            px: 0.75,
-                                                        }}
-                                                        onClick={reachDate(date)}
-                                                    >
-                                                        {date.getDate()}
-                                                    </Button>
+                                                    {date.getDate()}
                                                 </td>
                                             ))}
                                         </tr>
@@ -147,9 +135,27 @@ export const DatePicker = ({ handleDateChange, isStatic }: DatePickerProps) => {
     );
 };
 
+const getOptions = (paramsOptions: DatePickerProps['options']) =>
+    ({
+        dayStartHour: 5,
+        weekStartsOn: 6,
+        showWeekNumber: true,
+        rootWidth: 640,
+        ...paramsOptions,
+    } as DatePickerOptions);
+
 type DatePickerProps = {
     isStatic?: boolean;
     handleDateChange: (date: Date) => void;
+    selectionMode: 'day' | 'week' | 'month';
+    options?: Partial<DatePickerOptions>;
+};
+
+export type DatePickerOptions = {
+    dayStartHour: number;
+    weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+    showWeekNumber: boolean;
+    rootWidth: number;
 };
 
 const classLabels = {
@@ -160,12 +166,13 @@ const classLabels = {
     isToday: 'ddp--isToday',
     isOutOfRange: 'ddp--isOutOfRange',
     isWeekNumber: 'ddp-weekNumber',
+    isSelected: 'ddp--isSelected',
 } as const;
 
-const calendarSx = (theme: Theme) => ({
+const calendarSx = (options: DatePickerOptions) => (theme: Theme) => ({
     [`&.${classLabels.root}`]: {
         position: 'relative',
-        width: ROOT_WIDTH,
+        width: options.rootWidth,
         fontFamily: theme.typography.fontFamily,
         fontSize: '1rem',
         '& .MuiCardContent-root': {
@@ -207,7 +214,7 @@ const calendarSx = (theme: Theme) => ({
         borderCollapse: 'collapse',
     },
     [`.${classLabels.browsers} .${classLabels.dayPicker} table td`]: {
-        width: `calc(100% / ${DAYS_IN_WEEK + (SHOW_WEEK_NUMBER ? 1 : 0)})`,
+        width: `calc(100% / ${DAYS_IN_WEEK + (options.showWeekNumber ? 1 : 0)})`,
         py: 0.25,
         px: 0.5,
         textAlign: 'right',
@@ -215,6 +222,9 @@ const calendarSx = (theme: Theme) => ({
     [`.${classLabels.browsers} .${classLabels.dayPicker} table tr td`]: {
         borderBottom: '1px solid',
         borderBottomColor: 'grey.200',
+        cursor: 'pointer',
+        py: 0.25,
+        px: 0.75,
         [`&.${classLabels.isOutOfRange}`]: {
             opacity: 0.5,
         },
@@ -222,15 +232,25 @@ const calendarSx = (theme: Theme) => ({
             fontWeight: 'bold',
             textAlign: 'left',
             backgroundColor: 'grey.200',
+            cursor: 'default',
         },
         [`&.${classLabels.isToday}`]: {
-            borderBottomWidth: 2,
-            borderBottomColor: 'primary.main',
+            aspectRatio: 1,
+            borderStyle: 'solid',
+            borderWidth: 2,
+            borderColor: 'primary.main',
+        },
+        [`&.${classLabels.isSelected}`]: {
+            backgroundColor: 'primary.light',
         },
     },
     [`.${classLabels.browsers} .${classLabels.monthPicker} table td`]: {
         width: `calc(100% / 4)`,
         px: 0.25,
         py: 0.25,
+        [`&.${classLabels.isSelected}`]: {
+            borderBottomWidth: 2,
+            borderBottomColor: 'primary.main',
+        },
     },
 });

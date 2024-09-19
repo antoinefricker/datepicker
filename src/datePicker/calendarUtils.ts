@@ -1,14 +1,12 @@
 import { add, differenceInDays, format, startOfDay, startOfMonth, startOfWeek } from 'date-fns';
+import { DateRange } from './types';
+import { DatePickerOptions } from './DatePicker';
 
-export const DAY_START_HOUR = 6;
-export const WEEK_STARTS_ON = 6;
 export const DAYS_IN_WEEK = 7;
 export const MONTHS_IN_YEAR = 12;
-export const SHOW_WEEK_NUMBER = true;
-export const ROOT_WIDTH = 640;
 
-export const getMonthRange = (from: Date) => {
-    const start = add(startOfDay(startOfMonth(from)), { hours: DAY_START_HOUR });
+export const getMonthRange = (from: Date, options: DatePickerOptions) => {
+    const start = add(startOfDay(startOfMonth(from)), { hours: options.dayStartHour });
     const end = add(start, { months: 1 });
     const length = differenceInDays(end, start);
     return { start, end, length };
@@ -17,9 +15,11 @@ export const getMonthRange = (from: Date) => {
 const KEY_FORMAT = 'yyyy-MM-dd-HH-mm';
 export const getDateGroupKey = (date: Date): string => format(date, KEY_FORMAT);
 
-export const getMonthDisplayRange = (from: Date) => {
-    const range = getMonthRange(from);
-    const displayStart = add(startOfWeek(range.start, { weekStartsOn: WEEK_STARTS_ON }), { hours: DAY_START_HOUR });
+export const getMonthDisplayRange = (from: Date, options: DatePickerOptions) => {
+    const range = getMonthRange(from, options);
+    const displayStart = add(startOfWeek(range.start, { weekStartsOn: options.weekStartsOn }), {
+        hours: options.dayStartHour,
+    });
     const numberOfDays = Math.ceil(differenceInDays(range.end, displayStart) / DAYS_IN_WEEK) * DAYS_IN_WEEK;
     return {
         start: displayStart,
@@ -33,10 +33,10 @@ export const getDatesInRange = ({ start, length }: DateRange): Date[] =>
 
 export const isDateOutOfMonthRange = (date: Date, displayedDate: Date) => date.getMonth() !== displayedDate.getMonth();
 
-export const getLocalizedDayNames = (): string[] => {
+export const getLocalizedDayNames = (options: DatePickerOptions): string[] => {
     const daysNames: string[] = [];
     for (let i = 0; i < DAYS_IN_WEEK; i++) {
-        const day = (WEEK_STARTS_ON + i) % DAYS_IN_WEEK;
+        const day = (options.weekStartsOn + i) % DAYS_IN_WEEK;
         const date = new Date(2024, 0, day);
         const dayName = format(date, 'EE');
         daysNames.push(dayName);
@@ -51,13 +51,4 @@ export const getLocalizedMonthsNames = () => {
         monthsNames.push(format(date, 'MMMM'));
     }
     return monthsNames;
-};
-
-export type DateRange = {
-    /** range inclusive start */
-    start: Date;
-    /** range inclusive end */
-    end: Date;
-    /** range duration in days */
-    length: number;
 };
