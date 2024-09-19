@@ -33,7 +33,7 @@ export const DatePicker = ({ selectionMode, handleDateChange, isStatic, options:
             return getWeekRange(selectedDate, options);
         }
         return getMonthRange(selectedDate);
-    }, [selectedDate]);
+    }, [selectedDate, selectionMode]);
 
     useEffect(() => {
         handleDateChange(selectedDate, selectedDateRange);
