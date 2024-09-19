@@ -5,12 +5,12 @@ Inspired by Fluent UI [DatePicker component](https://developer.microsoft.com/en-
 
 ### Day selection
 
-![Day selection](selection-day.png)
+![Day selection](./doc/selection-day.png)
 
 ### Week selection
 
-![Week selection](selection-week.png)
+![Week selection](./doc/selection-week.png)
 
 ### Month selection
 
-![Month selection](selection-month.png)
+![Month selection](./doc/selection-month.png)
