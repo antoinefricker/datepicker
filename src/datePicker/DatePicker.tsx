@@ -44,6 +44,12 @@ export const DatePicker = ({
     }, [selectedDate, selectionMode]);
 
     useEffect(() => {
+        if (opened) {
+            setDisplayedDate(selectedDate);
+        }
+    }, [opened]);
+
+    useEffect(() => {
         if (handleDageChangeOnClose) {
             return;
         }
