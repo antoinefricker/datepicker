@@ -71,9 +71,9 @@ export const DatePicker = ({
     const displayNextYear = () => setDisplayedDate((formerDate) => add(formerDate, { years: 1 }));
 
     const assignDate = (date: Date) => () => setSelectedDate(date);
-    const assignMonth = (month: number) => () => {
+    const assignMonth = (month: number, year: number) => () => {
         if (selectionMode === 'month') {
-            return setSelectedDate((formerDate) => set(formerDate, { month }));
+            return setSelectedDate((formerDate) => set(formerDate, { month, year }));
         }
         setDisplayedDate((formerDate) => set(formerDate, { month }));
     };
@@ -162,10 +162,15 @@ export const DatePicker = ({
                                                     className={clsx({
                                                         [classLabels.isSelected]:
                                                             selectionMode === 'month' &&
-                                                            selectedDate.getMonth() === monthIndex,
+                                                            selectedDate.getMonth() === monthIndex &&
+                                                            displayedDate.getFullYear() === selectedDate.getFullYear(),
                                                     })}
                                                 >
-                                                    <Button variant="text" fullWidth onClick={assignMonth(monthIndex)}>
+                                                    <Button
+                                                        variant="text"
+                                                        fullWidth
+                                                        onClick={assignMonth(monthIndex, displayedDate.getFullYear())}
+                                                    >
                                                         {monthName}
                                                     </Button>
                                                 </td>
@@ -191,6 +196,7 @@ const getOptions = (paramsOptions: DatePickerProps['options']) =>
         monthPickerWidth: 320,
         ...paramsOptions,
     } as DatePickerOptions);
+
 export type DatePickerProps = {
     handleDateChange: (date: Date, range: DateRange) => void;
     handleDageChangeOnClose?: boolean;
