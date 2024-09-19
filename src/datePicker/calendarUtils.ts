@@ -3,6 +3,7 @@ import { DateRange } from './types';
 import { DatePickerOptions } from './DatePicker';
 
 export const DAYS_IN_WEEK = 7;
+export const MONTHS_IN_TRIMESTER = 3;
 const MONTHS_IN_YEAR = 12;
 const MINUTE_IN_MILLISECONDS = 60 * 1000;
 
@@ -15,9 +16,6 @@ export const getMonthRange = (from: Date) => {
 
 export const isDateInRange = (date: Date, { start, end }: Omit<DateRange, 'length'>): boolean =>
     date.valueOf() >= start.valueOf() && isBefore(date, end);
-
-const KEY_FORMAT = 'yyyy-MM-dd-HH-mm';
-export const getDateGroupKey = (date: Date): string => format(date, KEY_FORMAT);
 
 export const getMonthDisplayRange = (from: Date, options: DatePickerOptions) => {
     const range = getMonthRange(from);

@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
     DAYS_IN_WEEK,
-    getDateGroupKey,
     getDatesInRange,
     getDayRange,
     getLocalizedDayNames,
@@ -11,20 +10,29 @@ import {
     getWeekRange,
     isDateInRange,
     isDateOutOfMonthRange,
+    MONTHS_IN_TRIMESTER,
 } from './calendarUtils';
 import { chunk } from 'lodash';
 import clsx from 'clsx';
 import { add, format, isToday, set } from 'date-fns';
 import { LuChevronLeft } from 'react-icons/lu';
 import { LuChevronRight } from 'react-icons/lu';
-import { Button, Card, CardContent, ClickAwayListener, IconButton, Theme, Typography } from '@mui/material';
+import { Card, CardContent, Button, ClickAwayListener, IconButton, Theme, Typography } from '@mui/material';
 import { DateRange } from './types';
 
-export const DatePicker = ({ selectionMode, handleDateChange, isStatic, options: paramsOptions }: DatePickerProps) => {
-    const [opened, setOpened] = useState<boolean>(true);
-    const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-
+export const DatePicker = ({
+    handleDageChangeOnClose = false,
+    handleDateChange,
+    options: paramsOptions,
+    selectionMode,
+    opened,
+    setOpened,
+    selectedDate: paramsSelectedDate = new Date(),
+}: DatePickerProps) => {
     const options = getOptions(paramsOptions);
+
+    const [selectedDate, setSelectedDate] = useState<Date>(paramsSelectedDate);
+    const [displayedDate, setDisplayedDate] = useState<Date>(paramsSelectedDate);
 
     const selectedDateRange: DateRange = useMemo(() => {
         if (selectionMode === 'day') {
@@ -36,129 +44,138 @@ export const DatePicker = ({ selectionMode, handleDateChange, isStatic, options:
     }, [selectedDate, selectionMode]);
 
     useEffect(() => {
+        if (handleDageChangeOnClose) {
+            return;
+        }
         handleDateChange(selectedDate, selectedDateRange);
     }, [selectedDateRange]);
 
-    const openedHandler = (value: boolean) => setOpened(value || !!isStatic);
+    const openedHandler = (value: boolean) => {
+        if (handleDageChangeOnClose && !value) {
+            handleDateChange(selectedDate, selectedDateRange);
+        }
+        setOpened(value);
+    };
 
     const daysNames = getLocalizedDayNames(options);
-    const displayedDateRange = getMonthDisplayRange(selectedDate, options);
-    const datesInRange = getDatesInRange(displayedDateRange);
-    const datesRows = chunk(datesInRange, DAYS_IN_WEEK);
+    const displayedDateRange = getMonthDisplayRange(displayedDate, options);
+    const datesRows = chunk(getDatesInRange(displayedDateRange), DAYS_IN_WEEK);
 
     const monthsNames = getLocalizedMonthsNames();
-    const monthRows = chunk(monthsNames, 4);
+    const monthRows = chunk(monthsNames, MONTHS_IN_TRIMESTER);
 
-    const reachPrevMonth = () => setSelectedDate((selectedDate) => add(selectedDate, { months: -1 }));
-    const reachNextMonth = () => setSelectedDate((selectedDate) => add(selectedDate, { months: 1 }));
-    const reachPrevYear = () => setSelectedDate((selectedDate) => add(selectedDate, { years: -1 }));
-    const reachNextYear = () => setSelectedDate((selectedDate) => add(selectedDate, { years: 1 }));
-    const reachDate = (date: Date) => () => setSelectedDate(date);
-    const reachMonth = (month: number) => () => setSelectedDate((selectedDate) => set(selectedDate, { month }));
+    const displayPrevMonth = () => setDisplayedDate((formerDate) => add(formerDate, { months: -1 }));
+    const displayNextMonth = () => setDisplayedDate((formerDate) => add(formerDate, { months: 1 }));
+
+    const displayPrevYear = () => setDisplayedDate((formerDate) => add(formerDate, { years: -1 }));
+    const displayNextYear = () => setDisplayedDate((formerDate) => add(formerDate, { years: 1 }));
+
+    const assignDate = (date: Date) => () => setSelectedDate(date);
+    const assignMonth = (month: number) => () => {
+        if (selectionMode === 'month') {
+            return setSelectedDate((formerDate) => set(formerDate, { month }));
+        }
+        setDisplayedDate((formerDate) => set(formerDate, { month }));
+    };
 
     if (!opened) {
         return null;
     }
-
     return (
         <ClickAwayListener onClickAway={() => openedHandler(false)}>
-            <Card elevation={4} className={classLabels.root} sx={calendarSx(options)}>
-                <CardContent>
-                    <div className={classLabels.browsers}>
-                        {selectionMode !== 'month' && (
-                            <section className={classLabels.dayPicker}>
-                                <header>
-                                    <Typography variant="h4">{format(selectedDate, 'MMMM yyyy')}</Typography>
-                                    <IconButton aria-label="Previous month" onClick={reachPrevMonth}>
-                                        <LuChevronLeft size="18" />
-                                    </IconButton>
-                                    <IconButton aria-label="Next month" onClick={reachNextMonth}>
-                                        <LuChevronRight size="18" />
-                                    </IconButton>
-                                </header>
-                                <table>
-                                    <thead>
-                                        <tr key={`daynames`}>
-                                            {options.showWeekNumber && <td className={classLabels.isWeekNumber}>#</td>}
-                                            {daysNames.map((dayName) => (
-                                                <td key={`day_${dayName}`}>{dayName}</td>
-                                            ))}
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {datesRows.map((row, rowIndex) => (
-                                            <tr key={`week_${rowIndex}`}>
-                                                {options.showWeekNumber && (
-                                                    <td className={classLabels.isWeekNumber}>
-                                                        {format(row[0], 'w', { weekStartsOn: options.weekStartsOn })}
-                                                    </td>
-                                                )}
-                                                {row.map((date) => (
-                                                    <td
-                                                        onClick={reachDate(date)}
-                                                        className={clsx({
-                                                            [classLabels.isOutOfRange]: isDateOutOfMonthRange(
-                                                                date,
-                                                                selectedDate,
-                                                            ),
-                                                            [classLabels.isToday]: isToday(date),
-                                                            [classLabels.isSelected]: isDateInRange(
-                                                                date,
-                                                                selectedDateRange,
-                                                            ),
-                                                        })}
-                                                        key={`day_${getDateGroupKey(date)}`}
-                                                    >
-                                                        {date.getDate()}
-                                                    </td>
-                                                ))}
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </section>
-                        )}
-                        <section className={classLabels.monthPicker}>
+            <Card className={classLabels.root} sx={calendarSx(options)}>
+                <CardContent className={classLabels.container}>
+                    {selectionMode !== 'month' && (
+                        <section className={clsx([classLabels.picker, classLabels.dayPicker])}>
                             <header>
-                                <Typography variant="h4">{format(selectedDate, 'yyyy')}</Typography>
-                                <IconButton aria-label="Previous year" onClick={reachPrevYear}>
+                                <Typography className={classLabels.headerTitle}>
+                                    {format(displayedDate, 'MMMM yyyy')}
+                                </Typography>
+                                <IconButton aria-label="Previous month" onClick={displayPrevMonth}>
                                     <LuChevronLeft size="18" />
                                 </IconButton>
-                                <IconButton aria-label="Next year" onClick={reachNextYear}>
+                                <IconButton aria-label="Next month" onClick={displayNextMonth}>
                                     <LuChevronRight size="18" />
                                 </IconButton>
                             </header>
                             <table>
+                                <thead>
+                                    <tr key={`daynames`}>
+                                        {options.showWeekNumber && <td className={classLabels.isWeekNumber}>#</td>}
+                                        {daysNames.map((dayName) => (
+                                            <td key={`day_${dayName}`}>{dayName}</td>
+                                        ))}
+                                    </tr>
+                                </thead>
                                 <tbody>
-                                    {monthRows.map((monthRow, monthRowIndex) => (
-                                        <tr>
-                                            {monthRow.map((monthName, monthNameIndex) => {
-                                                const monthIndex = monthRowIndex * 4 + monthNameIndex;
-                                                return (
-                                                    <td
-                                                        key={`month_${monthName}`}
-                                                        className={clsx({
-                                                            [classLabels.isSelected]:
-                                                                selectionMode === 'month' &&
-                                                                selectedDate.getMonth() === monthIndex,
-                                                        })}
-                                                    >
-                                                        <Button
-                                                            variant="text"
-                                                            fullWidth
-                                                            onClick={reachMonth(monthIndex)}
-                                                        >
-                                                            {monthName}
-                                                        </Button>
-                                                    </td>
-                                                );
-                                            })}
+                                    {datesRows.map((row, rowIndex) => (
+                                        <tr key={`week_${rowIndex}`}>
+                                            {options.showWeekNumber && (
+                                                <td key={`week_${rowIndex}_week`} className={classLabels.isWeekNumber}>
+                                                    {format(row[0], 'w', { weekStartsOn: options.weekStartsOn })}
+                                                </td>
+                                            )}
+                                            {row.map((date, dateIndex) => (
+                                                <td
+                                                    key={`week_${rowIndex}_${dateIndex}`}
+                                                    onClick={assignDate(date)}
+                                                    className={clsx({
+                                                        [classLabels.isOutOfRange]: isDateOutOfMonthRange(
+                                                            date,
+                                                            displayedDate,
+                                                        ),
+                                                        [classLabels.isToday]: isToday(date),
+                                                        [classLabels.isSelected]: isDateInRange(
+                                                            date,
+                                                            selectedDateRange,
+                                                        ),
+                                                    })}
+                                                >
+                                                    {date.getDate()}
+                                                </td>
+                                            ))}
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
                         </section>
-                    </div>
+                    )}
+                    <section className={clsx([classLabels.picker, classLabels.monthPicker])}>
+                        <header>
+                            <Typography className={classLabels.headerTitle}>{format(displayedDate, 'yyyy')}</Typography>
+                            <IconButton aria-label="Previous year" onClick={displayPrevYear}>
+                                <LuChevronLeft size="18" />
+                            </IconButton>
+                            <IconButton aria-label="Next year" onClick={displayNextYear}>
+                                <LuChevronRight size="18" />
+                            </IconButton>
+                        </header>
+                        <table>
+                            <tbody>
+                                {monthRows.map((monthRow, monthRowIndex) => (
+                                    <tr key={`months_${monthRowIndex}`}>
+                                        {monthRow.map((monthName, monthNameIndex) => {
+                                            const monthIndex = monthRowIndex * MONTHS_IN_TRIMESTER + monthNameIndex;
+                                            return (
+                                                <td
+                                                    key={`month_${monthName}`}
+                                                    className={clsx({
+                                                        [classLabels.isSelected]:
+                                                            selectionMode === 'month' &&
+                                                            selectedDate.getMonth() === monthIndex,
+                                                    })}
+                                                >
+                                                    <Button variant="text" fullWidth onClick={assignMonth(monthIndex)}>
+                                                        {monthName}
+                                                    </Button>
+                                                </td>
+                                            );
+                                        })}
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </section>
                 </CardContent>
             </Card>
         </ClickAwayListener>
@@ -170,90 +187,99 @@ const getOptions = (paramsOptions: DatePickerProps['options']) =>
         dayStartHour: 5,
         weekStartsOn: 6,
         showWeekNumber: true,
-        rootWidth: 640,
+        dayPickerWidth: 320,
+        monthPickerWidth: 320,
         ...paramsOptions,
     } as DatePickerOptions);
-
 export type DatePickerProps = {
-    isStatic?: boolean;
     handleDateChange: (date: Date, range: DateRange) => void;
-    selectionMode: 'day' | 'week' | 'month';
+    handleDageChangeOnClose?: boolean;
+    opened: boolean;
     options?: Partial<DatePickerOptions>;
+    selectionMode: 'day' | 'week' | 'month';
+    selectedDate?: Date;
+    setOpened: (opened: boolean) => void;
 };
 
 export type DatePickerOptions = {
     weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6;
     showWeekNumber: boolean;
-    rootWidth: number;
+    dayPickerWidth: number;
+    monthPickerWidth: number;
 };
 
 const classLabels = {
-    root: 'ddp-calendarContainer',
-    browsers: 'ddp-browsers',
-    monthPicker: 'ddp-monthPicker',
-    dayPicker: 'ddp-dayPicker',
-    isToday: 'ddp--isToday',
-    isOutOfRange: 'ddp--isOutOfRange',
-    isWeekNumber: 'ddp-weekNumber',
-    isSelected: 'ddp--isSelected',
+    root: 'datepicker-root',
+    container: 'datepicker-container',
+    picker: 'datepicker-picker',
+    monthPicker: 'datepicker-monthPicker',
+    dayPicker: 'datepicker-dayPicker',
+    headerTitle: 'datepicker-headerTitle',
+    isToday: 'datepicker-isToday',
+    isOutOfRange: 'datepicker-isOutOfRange',
+    isWeekNumber: 'datepicker-weekNumber',
+    isSelected: 'datepicker-isSelected',
 } as const;
 
 const calendarSx = (options: DatePickerOptions) => (theme: Theme) => ({
     [`&.${classLabels.root}`]: {
-        position: 'relative',
-        width: options.rootWidth,
         fontFamily: theme.typography.fontFamily,
         fontSize: '1rem',
-        '& .MuiCardContent-root': {
-            p: 1,
-        },
+        display: 'inline-block',
         userSelect: 'none',
+        p: 2,
     },
-    [`.${classLabels.browsers}`]: {
+    [`.${classLabels.container}`]: {
         display: 'flex',
-        flexDirection: 'row',
-        flexWrap: 'nowrap',
-        gap: 2,
-        '& > section': {
-            flex: '100% 0 1',
+        [`section.${classLabels.dayPicker}`]: {
+            position: 'relative',
+            width: `${options.dayPickerWidth}px`,
+            flexBasis: `${options.dayPickerWidth}px`,
+            flexGrow: 0,
+            flexShrink: 0,
+        },
+        [`section.${classLabels.monthPicker}`]: {
+            position: 'relative',
+            width: `${options.monthPickerWidth}px`,
+            flexBasis: `${options.monthPickerWidth}px`,
+            flexGrow: 0,
+            flexShrink: 0,
         },
     },
-    [`&.${classLabels.root} header`]: {
+    [`section.${classLabels.picker} header`]: {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        h4: {
-            flex: '1 1 auto',
-            fontSize: '1.25rem',
-            p: 0,
-            m: 0,
-        },
     },
-    [`&.${classLabels.root} header h4`]: {
+    [`section.${classLabels.picker} header .${classLabels.headerTitle}`]: {
         flex: '1 1 auto',
         fontSize: '1.25rem',
+        fontWeight: 'bold',
+        textAlign: 'center',
         p: 0,
+        pl: 0.5,
         m: 0,
     },
-    [`&.${classLabels.root} header button`]: {
+    [`.${classLabels.root} header button`]: {
         flex: '0 0 auto',
     },
-
-    [`.${classLabels.browsers} table`]: {
+    [`section.${classLabels.picker} table`]: {
         width: '100%',
         borderCollapse: 'collapse',
+        td: {
+            py: 0.25,
+            px: 0.5,
+        },
     },
-    [`.${classLabels.browsers} .${classLabels.dayPicker} table td`]: {
+    [`section.${classLabels.dayPicker} table td`]: {
         width: `calc(100% / ${DAYS_IN_WEEK + (options.showWeekNumber ? 1 : 0)})`,
-        py: 0.25,
-        px: 0.5,
         textAlign: 'right',
     },
-    [`.${classLabels.browsers} .${classLabels.dayPicker} table tr td`]: {
+    [`section.${classLabels.picker} td`]: {
         borderBottom: '1px solid',
         borderBottomColor: 'grey.200',
         cursor: 'pointer',
-        py: 0.25,
+        py: '3px',
         px: 0.75,
         [`&.${classLabels.isOutOfRange}`]: {
             opacity: 0.5,
@@ -261,7 +287,6 @@ const calendarSx = (options: DatePickerOptions) => (theme: Theme) => ({
         [`&.${classLabels.isWeekNumber}`]: {
             fontWeight: 'bold',
             textAlign: 'left',
-            backgroundColor: 'grey.200',
             cursor: 'default',
         },
         [`&.${classLabels.isToday}`]: {
@@ -274,22 +299,15 @@ const calendarSx = (options: DatePickerOptions) => (theme: Theme) => ({
             backgroundColor: 'primary.light',
         },
     },
-    [`.${classLabels.browsers} .${classLabels.monthPicker} table td`]: {
-        width: `calc(100% / 4)`,
-        px: 0.25,
-        py: 0.25,
+    [`.${classLabels.monthPicker} td`]: {
+        width: `calc(100% / ${MONTHS_IN_TRIMESTER})`,
         button: {
             minWidth: 'unset',
             p: 0,
             color: 'text.primary',
-            borderBottomStyle: 'solid',
-            borderBottomWidth: 2,
-            borderBottomColor: 'transparent',
         },
         [`&.${classLabels.isSelected} button`]: {
-            borderBottomStyle: 'solid',
-            borderBottomWidth: 2,
-            borderBottomColor: 'primary.main',
+            backgroundColor: 'primary.light',
         },
     },
 });
