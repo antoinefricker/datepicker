@@ -65,57 +65,59 @@ export const DatePicker = ({ selectionMode, handleDateChange, isStatic, options:
             <Card elevation={4} className={classLabels.root} sx={calendarSx(options)}>
                 <CardContent>
                     <div className={classLabels.browsers}>
-                        <section className={classLabels.dayPicker}>
-                            <header>
-                                <Typography variant="h4">{format(selectedDate, 'MMMM yyyy')}</Typography>
-                                <IconButton aria-label="Previous month" onClick={reachPrevMonth}>
-                                    <LuChevronLeft size="18" />
-                                </IconButton>
-                                <IconButton aria-label="Next month" onClick={reachNextMonth}>
-                                    <LuChevronRight size="18" />
-                                </IconButton>
-                            </header>
-                            <table>
-                                <thead>
-                                    <tr key={`daynames`}>
-                                        {options.showWeekNumber && <td className={classLabels.isWeekNumber}>#</td>}
-                                        {daysNames.map((dayName) => (
-                                            <td key={`day_${dayName}`}>{dayName}</td>
-                                        ))}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {datesRows.map((row, rowIndex) => (
-                                        <tr key={`week_${rowIndex}`}>
-                                            {options.showWeekNumber && (
-                                                <td className={classLabels.isWeekNumber}>
-                                                    {format(row[0], 'w', { weekStartsOn: options.weekStartsOn })}
-                                                </td>
-                                            )}
-                                            {row.map((date) => (
-                                                <td
-                                                    onClick={reachDate(date)}
-                                                    className={clsx({
-                                                        [classLabels.isOutOfRange]: isDateOutOfMonthRange(
-                                                            date,
-                                                            selectedDate,
-                                                        ),
-                                                        [classLabels.isToday]: isToday(date),
-                                                        [classLabels.isSelected]: isDateInRange(
-                                                            date,
-                                                            selectedDateRange,
-                                                        ),
-                                                    })}
-                                                    key={`day_${getDateGroupKey(date)}`}
-                                                >
-                                                    {date.getDate()}
-                                                </td>
+                        {selectionMode !== 'month' && (
+                            <section className={classLabels.dayPicker}>
+                                <header>
+                                    <Typography variant="h4">{format(selectedDate, 'MMMM yyyy')}</Typography>
+                                    <IconButton aria-label="Previous month" onClick={reachPrevMonth}>
+                                        <LuChevronLeft size="18" />
+                                    </IconButton>
+                                    <IconButton aria-label="Next month" onClick={reachNextMonth}>
+                                        <LuChevronRight size="18" />
+                                    </IconButton>
+                                </header>
+                                <table>
+                                    <thead>
+                                        <tr key={`daynames`}>
+                                            {options.showWeekNumber && <td className={classLabels.isWeekNumber}>#</td>}
+                                            {daysNames.map((dayName) => (
+                                                <td key={`day_${dayName}`}>{dayName}</td>
                                             ))}
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </section>
+                                    </thead>
+                                    <tbody>
+                                        {datesRows.map((row, rowIndex) => (
+                                            <tr key={`week_${rowIndex}`}>
+                                                {options.showWeekNumber && (
+                                                    <td className={classLabels.isWeekNumber}>
+                                                        {format(row[0], 'w', { weekStartsOn: options.weekStartsOn })}
+                                                    </td>
+                                                )}
+                                                {row.map((date) => (
+                                                    <td
+                                                        onClick={reachDate(date)}
+                                                        className={clsx({
+                                                            [classLabels.isOutOfRange]: isDateOutOfMonthRange(
+                                                                date,
+                                                                selectedDate,
+                                                            ),
+                                                            [classLabels.isToday]: isToday(date),
+                                                            [classLabels.isSelected]: isDateInRange(
+                                                                date,
+                                                                selectedDateRange,
+                                                            ),
+                                                        })}
+                                                        key={`day_${getDateGroupKey(date)}`}
+                                                    >
+                                                        {date.getDate()}
+                                                    </td>
+                                                ))}
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </section>
+                        )}
                         <section className={classLabels.monthPicker}>
                             <header>
                                 <Typography variant="h4">{format(selectedDate, 'yyyy')}</Typography>
