@@ -36,4 +36,18 @@ export const defaultTheme = createTheme({
             },
         }),
     },
+    components: {
+        MuiInputLabel: {
+            styleOverrides: {
+                root: {
+                    '&.MuiInputLabel-shrink': {
+                        backgroundColor: 'white',
+                        paddingLeft: '8px',
+                        paddingRight: '8px',
+                        transform: `translate(8px, -10px) scale(0.75)`,
+                    },
+                },
+            },
+        },
+    },
 });

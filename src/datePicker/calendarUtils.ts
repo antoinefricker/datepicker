@@ -1,4 +1,4 @@
-import { add, differenceInDays, format, startOfDay, startOfMonth, startOfWeek } from 'date-fns';
+import { add, differenceInDays, format, isBefore, startOfDay, startOfMonth, startOfWeek } from 'date-fns';
 import { DateRange } from './types';
 import { DatePickerOptions } from './DatePicker';
 
@@ -13,6 +13,9 @@ export const getMonthRange = (from: Date) => {
     return { start, end, length };
 };
 
+export const isDateInRange = (date: Date, { start, end }: Omit<DateRange, 'length'>): boolean =>
+    date.valueOf() >= start.valueOf() && isBefore(date, end);
+
 const KEY_FORMAT = 'yyyy-MM-dd-HH-mm';
 export const getDateGroupKey = (date: Date): string => format(date, KEY_FORMAT);
 
@@ -26,7 +29,7 @@ export const getMonthDisplayRange = (from: Date, options: DatePickerOptions) => 
         length: numberOfDays,
     };
 };
-export const getWeekDisplayRange = (from: Date, options: DatePickerOptions) => {
+export const getWeekRange = (from: Date, options: DatePickerOptions) => {
     const start = startOfDay(startOfWeek(from, { weekStartsOn: options.weekStartsOn }));
     const end = add(start, { weeks: 1 });
     return {
@@ -35,7 +38,7 @@ export const getWeekDisplayRange = (from: Date, options: DatePickerOptions) => {
         length: DAYS_IN_WEEK,
     };
 };
-export const getDayDisplayRange = (from: Date) => {
+export const getDayRange = (from: Date) => {
     const minutesPerDay = 60 * 24;
     const start = roundAtMinutes(from, minutesPerDay, 'floor');
     return {

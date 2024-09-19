@@ -3,11 +3,13 @@ import {
     DAYS_IN_WEEK,
     getDateGroupKey,
     getDatesInRange,
-    getDayDisplayRange,
+    getDayRange,
     getLocalizedDayNames,
     getLocalizedMonthsNames,
     getMonthDisplayRange,
-    getWeekDisplayRange,
+    getMonthRange,
+    getWeekRange,
+    isDateInRange,
     isDateOutOfMonthRange,
 } from './calendarUtils';
 import { chunk } from 'lodash';
@@ -24,18 +26,18 @@ export const DatePicker = ({ selectionMode, handleDateChange, isStatic, options:
 
     const options = getOptions(paramsOptions);
 
-    useEffect(() => {
-        handleDateChange(selectedDate);
-    }, [selectedDate]);
-
     const selectedDateRange: DateRange = useMemo(() => {
         if (selectionMode === 'day') {
-            return getDayDisplayRange(selectedDate);
+            return getDayRange(selectedDate);
         } else if (selectionMode === 'week') {
-            return getWeekDisplayRange(selectedDate, options);
+            return getWeekRange(selectedDate, options);
         }
-        return getMonthDisplayRange(selectedDate, options);
+        return getMonthRange(selectedDate);
     }, [selectedDate]);
+
+    useEffect(() => {
+        handleDateChange(selectedDate, selectedDateRange);
+    }, [selectedDateRange]);
 
     const openedHandler = (value: boolean) => setOpened(value || !!isStatic);
 
@@ -99,6 +101,10 @@ export const DatePicker = ({ selectionMode, handleDateChange, isStatic, options:
                                                             selectedDate,
                                                         ),
                                                         [classLabels.isToday]: isToday(date),
+                                                        [classLabels.isSelected]: isDateInRange(
+                                                            date,
+                                                            selectedDateRange,
+                                                        ),
                                                     })}
                                                     key={`day_${getDateGroupKey(date)}`}
                                                 >
@@ -128,7 +134,7 @@ export const DatePicker = ({ selectionMode, handleDateChange, isStatic, options:
                                                 <td key={`month_${monthName}`}>
                                                     <Button
                                                         variant="text"
-                                                        sx={{ color: 'text.primary' }}
+                                                        fullWidth
                                                         onClick={reachMonth(monthRowIndex * 4 + monthNameIndex)}
                                                     >
                                                         {monthName}
@@ -156,9 +162,9 @@ const getOptions = (paramsOptions: DatePickerProps['options']) =>
         ...paramsOptions,
     } as DatePickerOptions);
 
-type DatePickerProps = {
+export type DatePickerProps = {
     isStatic?: boolean;
-    handleDateChange: (date: Date) => void;
+    handleDateChange: (date: Date, range: DateRange) => void;
     selectionMode: 'day' | 'week' | 'month';
     options?: Partial<DatePickerOptions>;
 };
@@ -249,7 +255,7 @@ const calendarSx = (options: DatePickerOptions) => (theme: Theme) => ({
             aspectRatio: 1,
             borderStyle: 'solid',
             borderWidth: 2,
-            borderColor: 'primary.main',
+            borderColor: 'primary.dark',
         },
         [`&.${classLabels.isSelected}`]: {
             backgroundColor: 'primary.light',
@@ -259,6 +265,11 @@ const calendarSx = (options: DatePickerOptions) => (theme: Theme) => ({
         width: `calc(100% / 4)`,
         px: 0.25,
         py: 0.25,
+        button: {
+            minWidth: 'unset',
+            p: 0,
+            color: 'text.primary',
+        },
         [`&.${classLabels.isSelected}`]: {
             borderBottomWidth: 2,
             borderBottomColor: 'primary.main',
