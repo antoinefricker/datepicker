@@ -132,17 +132,27 @@ export const DatePicker = ({ selectionMode, handleDateChange, isStatic, options:
                                 <tbody>
                                     {monthRows.map((monthRow, monthRowIndex) => (
                                         <tr>
-                                            {monthRow.map((monthName, monthNameIndex) => (
-                                                <td key={`month_${monthName}`}>
-                                                    <Button
-                                                        variant="text"
-                                                        fullWidth
-                                                        onClick={reachMonth(monthRowIndex * 4 + monthNameIndex)}
+                                            {monthRow.map((monthName, monthNameIndex) => {
+                                                const monthIndex = monthRowIndex * 4 + monthNameIndex;
+                                                return (
+                                                    <td
+                                                        key={`month_${monthName}`}
+                                                        className={clsx({
+                                                            [classLabels.isSelected]:
+                                                                selectionMode === 'month' &&
+                                                                selectedDate.getMonth() === monthIndex,
+                                                        })}
                                                     >
-                                                        {monthName}
-                                                    </Button>
-                                                </td>
-                                            ))}
+                                                        <Button
+                                                            variant="text"
+                                                            fullWidth
+                                                            onClick={reachMonth(monthIndex)}
+                                                        >
+                                                            {monthName}
+                                                        </Button>
+                                                    </td>
+                                                );
+                                            })}
                                         </tr>
                                     ))}
                                 </tbody>
@@ -197,6 +207,7 @@ const calendarSx = (options: DatePickerOptions) => (theme: Theme) => ({
         '& .MuiCardContent-root': {
             p: 1,
         },
+        userSelect: 'none',
     },
     [`.${classLabels.browsers}`]: {
         display: 'flex',
@@ -271,8 +282,12 @@ const calendarSx = (options: DatePickerOptions) => (theme: Theme) => ({
             minWidth: 'unset',
             p: 0,
             color: 'text.primary',
+            borderBottomStyle: 'solid',
+            borderBottomWidth: 2,
+            borderBottomColor: 'transparent',
         },
-        [`&.${classLabels.isSelected}`]: {
+        [`&.${classLabels.isSelected} button`]: {
+            borderBottomStyle: 'solid',
             borderBottomWidth: 2,
             borderBottomColor: 'primary.main',
         },

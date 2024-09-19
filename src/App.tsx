@@ -32,7 +32,7 @@ export const App = () => {
     return (
         <ThemeProvider theme={defaultTheme}>
             <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={dateLocales[dateLocale]}>
-                <Stack direction="column" gap={1}>
+                <Stack direction="column" gap={2}>
                     <Grid container spacing={2}>
                         <Grid size={6}>
                             <Typography>Selected date: {format(date, DATE_FORMAT)}</Typography>
