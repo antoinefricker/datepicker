@@ -239,10 +239,12 @@ const calendarSx = (options: DatePickerOptions) => (theme: Theme) => ({
         fontSize: '1rem',
         display: 'inline-block',
         userSelect: 'none',
-        p: 2,
     },
     [`.${classLabels.container}`]: {
         display: 'flex',
+        flexDirection: 'row',
+        flexWrap: 'nowrap',
+        gap: 4,
         [`section.${classLabels.dayPicker}`]: {
             position: 'relative',
             width: `${options.dayPickerWidth}px`,
@@ -262,6 +264,7 @@ const calendarSx = (options: DatePickerOptions) => (theme: Theme) => ({
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
+        pb: 1,
     },
     [`section.${classLabels.picker} header .${classLabels.headerTitle}`]: {
         flex: '1 1 auto',
@@ -278,21 +281,12 @@ const calendarSx = (options: DatePickerOptions) => (theme: Theme) => ({
     [`section.${classLabels.picker} table`]: {
         width: '100%',
         borderCollapse: 'collapse',
-        td: {
-            py: 0.25,
-            px: 0.5,
-        },
-    },
-    [`section.${classLabels.dayPicker} table td`]: {
-        width: `calc(100% / ${DAYS_IN_WEEK + (options.showWeekNumber ? 1 : 0)})`,
-        textAlign: 'right',
     },
     [`section.${classLabels.picker} td`]: {
+        px: 0.5,
+        height: '32px',
         borderBottom: '1px solid',
         borderBottomColor: 'grey.200',
-        cursor: 'pointer',
-        py: '3px',
-        px: 0.75,
         [`&.${classLabels.isOutOfRange}`]: {
             opacity: 0.5,
         },
@@ -311,15 +305,22 @@ const calendarSx = (options: DatePickerOptions) => (theme: Theme) => ({
             backgroundColor: 'primary.light',
         },
     },
-    [`.${classLabels.monthPicker} td`]: {
+    [`section.${classLabels.picker}.${classLabels.dayPicker} td`]: {
+        width: `calc(100% / ${DAYS_IN_WEEK + (options.showWeekNumber ? 1 : 0)})`,
+        textAlign: 'right',
+        cursor: 'pointer',
+    },
+
+    [`section.${classLabels.picker}.${classLabels.monthPicker} td`]: {
         width: `calc(100% / ${MONTHS_IN_TRIMESTER})`,
-        button: {
-            minWidth: 'unset',
-            p: 0,
-            color: 'text.primary',
-        },
         [`&.${classLabels.isSelected} button`]: {
             backgroundColor: 'primary.light',
+        },
+        button: {
+            minWidth: 'unset',
+            fontSize: '1rem',
+            p: 0,
+            color: 'text.primary',
         },
     },
 });
