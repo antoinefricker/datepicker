@@ -20,7 +20,6 @@ export const App = () => {
                         handleDateChange={(date) => setDate(date)}
                         selectionMode="day"
                         options={{
-                            dayStartHour: 5,
                             weekStartsOn: 6,
                             showWeekNumber: true,
                             rootWidth: 640,

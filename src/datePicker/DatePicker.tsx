@@ -1,11 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
     DAYS_IN_WEEK,
     getDateGroupKey,
     getDatesInRange,
+    getDayDisplayRange,
     getLocalizedDayNames,
     getLocalizedMonthsNames,
     getMonthDisplayRange,
+    getWeekDisplayRange,
     isDateOutOfMonthRange,
 } from './calendarUtils';
 import { chunk } from 'lodash';
@@ -14,6 +16,7 @@ import { add, format, isToday, set } from 'date-fns';
 import { LuChevronLeft } from 'react-icons/lu';
 import { LuChevronRight } from 'react-icons/lu';
 import { Button, Card, CardContent, ClickAwayListener, IconButton, Theme, Typography } from '@mui/material';
+import { DateRange } from './types';
 
 export const DatePicker = ({ selectionMode, handleDateChange, isStatic, options: paramsOptions }: DatePickerProps) => {
     const [opened, setOpened] = useState<boolean>(true);
@@ -23,6 +26,15 @@ export const DatePicker = ({ selectionMode, handleDateChange, isStatic, options:
 
     useEffect(() => {
         handleDateChange(selectedDate);
+    }, [selectedDate]);
+
+    const selectedDateRange: DateRange = useMemo(() => {
+        if (selectionMode === 'day') {
+            return getDayDisplayRange(selectedDate);
+        } else if (selectionMode === 'week') {
+            return getWeekDisplayRange(selectedDate, options);
+        }
+        return getMonthDisplayRange(selectedDate, options);
     }, [selectedDate]);
 
     const openedHandler = (value: boolean) => setOpened(value || !!isStatic);
@@ -152,7 +164,6 @@ type DatePickerProps = {
 };
 
 export type DatePickerOptions = {
-    dayStartHour: number;
     weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6;
     showWeekNumber: boolean;
     rootWidth: number;

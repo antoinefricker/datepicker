@@ -3,10 +3,11 @@ import { DateRange } from './types';
 import { DatePickerOptions } from './DatePicker';
 
 export const DAYS_IN_WEEK = 7;
-export const MONTHS_IN_YEAR = 12;
+const MONTHS_IN_YEAR = 12;
+const MINUTE_IN_MILLISECONDS = 60 * 1000;
 
-export const getMonthRange = (from: Date, options: DatePickerOptions) => {
-    const start = add(startOfDay(startOfMonth(from)), { hours: options.dayStartHour });
+export const getMonthRange = (from: Date) => {
+    const start = startOfDay(startOfMonth(from));
     const end = add(start, { months: 1 });
     const length = differenceInDays(end, start);
     return { start, end, length };
@@ -16,16 +17,44 @@ const KEY_FORMAT = 'yyyy-MM-dd-HH-mm';
 export const getDateGroupKey = (date: Date): string => format(date, KEY_FORMAT);
 
 export const getMonthDisplayRange = (from: Date, options: DatePickerOptions) => {
-    const range = getMonthRange(from, options);
-    const displayStart = add(startOfWeek(range.start, { weekStartsOn: options.weekStartsOn }), {
-        hours: options.dayStartHour,
-    });
+    const range = getMonthRange(from);
+    const displayStart = startOfWeek(range.start, { weekStartsOn: options.weekStartsOn });
     const numberOfDays = Math.ceil(differenceInDays(range.end, displayStart) / DAYS_IN_WEEK) * DAYS_IN_WEEK;
     return {
         start: displayStart,
         end: add(displayStart, { days: numberOfDays - 1 }),
         length: numberOfDays,
     };
+};
+export const getWeekDisplayRange = (from: Date, options: DatePickerOptions) => {
+    const start = startOfDay(startOfWeek(from, { weekStartsOn: options.weekStartsOn }));
+    const end = add(start, { weeks: 1 });
+    return {
+        start,
+        end,
+        length: DAYS_IN_WEEK,
+    };
+};
+export const getDayDisplayRange = (from: Date) => {
+    const minutesPerDay = 60 * 24;
+    const start = roundAtMinutes(from, minutesPerDay, 'floor');
+    return {
+        start,
+        end: add(startOfDay(start), { days: 1 }),
+        length: 1,
+    };
+};
+
+const roundAtMinutes = (date: Date, minutePrecision: number, roundingOption: 'floor' | 'ceil'): Date => {
+    if (minutePrecision <= 0) {
+        throw new Error('Minute precision should be greater than 0');
+    }
+    const fromTimestamp = startOfDay(date).getTime();
+    const seedTimestamp = date.getTime();
+    const precision = minutePrecision * MINUTE_IN_MILLISECONDS;
+    const roundingMethod = roundingOption === 'floor' ? Math.floor : Math.ceil;
+    const roundedTimeStamp = roundingMethod((seedTimestamp - fromTimestamp) / precision) * precision;
+    return new Date(fromTimestamp + roundedTimeStamp);
 };
 
 export const getDatesInRange = ({ start, length }: DateRange): Date[] =>
